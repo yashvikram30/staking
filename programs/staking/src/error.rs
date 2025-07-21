@@ -2,6 +2,8 @@ use anchor_lang::prelude::*;
 
 #[error_code]
 pub enum StakeError {
-    #[msg("You are staking more than the max amount")]
+    #[msg("Freaze period not passed")]
+    FreezePeriodNotPassed,
+    #[msg("Max stake reached")]
     MaxStakeReached,
 }
