@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 
 #[error_code]
-pub enum ErrorCode {
-    #[msg("Custom error message")]
-    CustomError,
+pub enum StakeError {
+    #[msg("You are staking more than the max amount")]
+    MaxStakeReached,
 }
