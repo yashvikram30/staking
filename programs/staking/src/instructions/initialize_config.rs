@@ -1,8 +1,17 @@
 use anchor_lang::prelude::*;
-use anchor_spl::token::Token;
+use anchor_spl::token::{Mint, Token};
 
 use crate::StakeConfig;
 
+/*
+    accounts:
+        - admin (initializes the config)
+        - config (StakeConfig account)
+        - rewards_mint (Mint for reward of staking)
+        - system program & token program
+*/
+
+// we initialize these accounts here, and we may not use it here, but these are initialized o
 #[derive(Accounts)]
 pub struct InitializeConfig<'info> {
 
@@ -24,9 +33,9 @@ pub struct InitializeConfig<'info> {
         seeds = [b"rewards",config.key().as_ref()],
         bump,
         mint::decimals = 6,
-        mint::authority = config,
+        mint::authority = config, // this means that config is the "money printing machine", that is, only it can create reward tokens
     )]
-    pub rewards_mint: Account<'info,Mint>,
+    pub rewards_mint: Account<'info, Mint>,
 
     pub system_program : Program<'info, System>,
     pub token_program: Program<'info,Token>,
