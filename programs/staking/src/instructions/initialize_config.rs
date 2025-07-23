@@ -11,7 +11,7 @@ use crate::StakeConfig;
         - system program & token program
 */
 
-// we initialize these accounts here, and we may not use it here, but these are initialized o
+// we initialize these accounts here, and we may not use it here, but these are initialized over here. and also, these are initialised only once
 #[derive(Accounts)]
 pub struct InitializeConfig<'info> {
 
