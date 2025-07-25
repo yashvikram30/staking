@@ -86,7 +86,7 @@ pub struct Unstake<'info> {
 
 /*
     Steps:
-    (1) calculate the date/ time and check if freeze_period has passed
+    (1) calculate the date/ time and check if freeze_period has passed (even though the user can unstake their nft anytime, they cannot do it before the freezing period is over)
     (2) thaw (unfreeze) the frozen NFT
     (3) remove delegate approval so user gets full control
     (4) update the amount of tokens staked by the user (decrease it)

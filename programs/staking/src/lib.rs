@@ -24,7 +24,7 @@ pub mod nft_staking {
         max_stake: u8,
         freeze_period: u32
     ) -> Result<()> {
-        ctx.accounts.initailize_config(points_per_stake, max_stake, freeze_period, &ctx.bumps)
+        ctx.accounts.initialize_config(points_per_stake, max_stake, freeze_period, &ctx.bumps)
     }
 
     pub fn initialize_user(ctx: Context<InitializeUser>) -> Result<()> {

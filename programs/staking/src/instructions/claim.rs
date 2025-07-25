@@ -32,14 +32,22 @@ pub struct Claim<'info> {
         associated_token::authority = user
     )]
     pub rewards_ata: Account<'info, TokenAccount>,
-    #[account(seeds = [b"config".as_ref()], bump = config.bump)]
+
+    #[account(
+        seeds = [b"config".as_ref()], 
+        bump = config.bump
+    )]
     pub config: Account<'info, StakeConfig>,
 
     pub system_program: Program<'info, System>,
     pub token_program: Program<'info, Token>,
     pub associated_token_program: Program<'info, AssociatedToken>,
 }
-
+/*
+    Steps:
+    (1) we will mint the rewards token to user ata
+    (2) set user points to 0
+*/
 impl<'info> Claim<'info> {
     pub fn claim(&mut self) -> Result<()> {
         let cpi_program = self.token_program.to_account_info();
@@ -55,7 +63,15 @@ impl<'info> Claim<'info> {
 
         let cpi_context = CpiContext::new_with_signer(cpi_program, cpi_accounts, signer_seeds);
 
-        mint_to(cpi_context, self.user_account.points as u64 * 10_u64.pow(self.rewards_mint.decimals as u32));
+        // Calculate the amount to mint, accounting for decimals
+        let amount_to_mint = self.user_account.points as u64
+            * 10_u64.pow(self.rewards_mint.decimals as u32);
+
+        // CPI to mint the tokens
+        mint_to(cpi_context, amount_to_mint)?;
+
+        // CRITICAL FIX: Reset the user's points to 0
+        self.user_account.points = 0;
 
         Ok(())
     }
