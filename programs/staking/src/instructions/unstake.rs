@@ -14,6 +14,20 @@ use anchor_spl::{
 
 use crate::{ state::{ StakeAccount, StakeConfig }, UserAccount };
 use crate::{ error::StakeError };
+/*
+   - this instruction will allow the user to stake nfts.
+   - accounts:
+        - user
+        - mint
+        - collection mint
+        - metadata
+        - edition
+        - config
+        - user_account
+        - stake_account
+        - user_mint_ata
+        - the three programs
+*/
 
 #[derive(Accounts)]
 pub struct Unstake<'info> {
@@ -45,7 +59,7 @@ pub struct Unstake<'info> {
         seeds::program = metadata_program.key(),
         bump
     )]
-    pub edition: Account<'info, MetadataAccount>,
+    pub edition: Account<'info, MasterEditionAccount>,
 
     #[account(seeds = [b"config"], bump = config.bump)]
     pub config: Account<'info, StakeConfig>,
@@ -70,18 +84,23 @@ pub struct Unstake<'info> {
     pub token_program: Program<'info, Token>,
 }
 
+/*
+    Steps:
+    (1) calculate the date/ time and check if freeze_period has passed
+    (2) thaw (unfreeze) the frozen NFT
+    (3) remove delegate approval so user gets full control
+    (4) update the amount of tokens staked by the user (decrease it)
+*/
 impl<'info> Unstake<'info> {
     pub fn unstake(&mut self) -> Result<()> {
         // ensure freeze period has passed
         let now = Clock::get()?.unix_timestamp;
 
-      
-
         let staked_at = self.stake_account.staked_at as i64;
         let days = (now - staked_at) / 86_400;
         require!(days >= (self.config.freeze_period as i64), StakeError::FreezePeriodNotPassed);
 
-        // thaw the forzen NFT via Metadata CPI
+        // thaw the frozen NFT via Metadata CPI
         let delegate = &self.stake_account.to_account_info();
         let token_account = &self.user_mint_ata.to_account_info();
         let edition = &self.edition.to_account_info();
@@ -101,7 +120,7 @@ impl<'info> Unstake<'info> {
             edition: edition,
             mint: &mint,
             token_program: &token_program,
-        }).invoke_signed(signer_seeds);
+        }).invoke_signed(signer_seeds)?;
 
         // Revoke delegate approval so user regains full control
         let cpi_accounts = Revoke {
